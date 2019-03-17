@@ -10,14 +10,30 @@
 #include <tins/ip_address.h>
 #include <QTimer>
 #include <string>
+#include "interfaceip.hpp"
 #include <tins/network_interface.h>
-
-
+#include <qlineedit.h>
+#include <qtablewidget.h>
 using MACAddress= Tins::HWAddress<6>;
 const uint16_t ARP_OP_REQUEST = 1;
 const uint16_t ARP_OP_REPLY = 2;
 
 
+struct ArpViewMapItem
+{
+    ArpViewMapItem(QLineEdit* lab, QTableWidget* tab):
+        label_(lab),
+        table_(tab)
+    {}
+    QLineEdit& lab(){
+        return *label_;
+    }
+    QTableWidget& tab(){
+        return *table_;
+    }
+    QLineEdit *label_;
+    QTableWidget *table_;
+};
 
 struct ArpTable
 {
@@ -33,7 +49,6 @@ struct ArpTable
     uint8_t my_prefix_size_;
     MACAddress my_mac_;
     std::unordered_map<Tins::IPv4Address, MACAddress> mappings_;
-    std::unordered_map<Tins::IPv4Address, std::vector<Traffic>> unresolved_;
 };
 
 
@@ -53,15 +68,16 @@ public:
 //    void addArpEntry();
 
     ArpTable& fooGetTable();
-
+    ArpTable& GetTable(std::string);
 
 signals:
-    void ArpTableChanged();
+    void ArpTableChanged(std::string);
     void SendArpFrame(Traffic);
 
 public slots:
     void processArp(const Traffic&);
     void setIP(const Tins::IPv4Address&, const std::string&, uint8_t);
+    void SetIP(std::string , IPInfo);
     void LookupIP(const std::string&, const std::string&  );
 
 

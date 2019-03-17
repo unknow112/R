@@ -7,8 +7,6 @@
 #include <vector>
 #include <unordered_set>
 #include <fstream>
-
-
 #include <iostream>
 
 auto desired_interfaces()

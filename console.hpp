@@ -13,7 +13,7 @@ public:
 
 signals:
     void QueryArp(const std::string&, const std::string&  );
-
+    void ChangeIP(const std::string&, const std::string&, const std::string&);
 
 public slots:
 };

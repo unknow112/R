@@ -52,13 +52,9 @@ void Arp::LookupIP(const std::string& s_dst_ip, const std::string& out_intf )
     ArpTable& m_t = arp_tables_[out_intf];
     auto res = m_t.mappings_.find(dst_ip);
     if (m_t.mappings_.end() == res){
-        // check if first arp request
-       // if (m_t.unresolved_.end() != m_t.unresolved_.find(dst_ip)){ // buffering je nejaky vadny, chek it out
-            // create request and send it, set timer
-            auto t = CreateRequest(dst_ip, out_intf);
-            m_t.unresolved_.insert({dst_ip, {}});
-            emit SendArpFrame(t);
-        //}
+        // create request and send it
+        auto t = CreateRequest(dst_ip, out_intf);
+        emit SendArpFrame(t);
     } else {
         // idk daco, si asi vlastne callbacky naimplementujem
     }
@@ -77,11 +73,8 @@ void Arp::processArp(const Traffic& t )
     break;
     case ARP_OP_REPLY:
         ArpTable& m_t = arp_tables_[t.in_intf_];
-        auto buffered = m_t.unresolved_[a.sender_ip_addr()];
-        m_t.unresolved_.erase(a.sender_ip_addr());
         m_t.mappings_.insert({a.sender_ip_addr(), a.sender_hw_addr()});
-        emit ArpTableChanged();
-        //send away all buffered
+        emit ArpTableChanged(t.in_intf_);
     }
 }
 
@@ -102,11 +95,24 @@ void Arp::setIP(const Tins::IPv4Address& ip, const std::string& intf, uint8_t pr
     m_t.my_prefix_size_ = prefix;
     m_t.mappings_.clear();
     m_t.mappings_.insert({ip, m_t.my_mac_ });
-    m_t.unresolved_.clear();
-    emit ArpTableChanged();
+    emit ArpTableChanged(intf);
 }
+
+void Arp::SetIP(std::string intf , IPInfo ipinfo){
+    setIP(ipinfo.ip_, intf, ipinfo.pref_l_);
+}
+
 
 ArpTable& Arp::fooGetTable()
 {
     return (*arp_tables_.begin()).second;
+}
+
+ArpTable& Arp::GetTable(std::string intf)
+{
+    auto result = arp_tables_.find(intf);
+    if (result == arp_tables_.end()){
+        throw std::runtime_error("Arp::GetTable(std::string) got invalid intf '"+intf+"' in internal call");
+    }
+    return (*result).second;
 }

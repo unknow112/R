@@ -22,7 +22,7 @@ public:
 signals:
 
 public slots:
-
+    //void ChangeIP(const std::string&,const std::string&,const std::string&);
 
 private:
 

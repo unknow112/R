@@ -52,14 +52,14 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>50</x>
       <y>10</y>
-      <width>451</width>
+      <width>1061</width>
       <height>391</height>
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -68,8 +68,8 @@
      <widget class="QTableWidget" name="arp_table_view">
       <property name="geometry">
        <rect>
-        <x>50</x>
-        <y>10</y>
+        <x>60</x>
+        <y>40</y>
         <width>331</width>
         <height>291</height>
        </rect>
@@ -90,43 +90,81 @@
        </property>
       </column>
      </widget>
-     <widget class="QPushButton" name="ip_change_button">
+     <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>260</x>
-        <y>320</y>
-        <width>89</width>
-        <height>25</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Change</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label">
-      <property name="geometry">
-       <rect>
-        <x>60</x>
-        <y>320</y>
-        <width>81</width>
+        <x>90</x>
+        <y>10</y>
+        <width>67</width>
         <height>17</height>
        </rect>
       </property>
       <property name="text">
-       <string>Current IP:</string>
+       <string>ARP for:</string>
       </property>
      </widget>
-     <widget class="QLineEdit" name="ip_inputer">
+     <widget class="QLineEdit" name="arp_name">
       <property name="geometry">
        <rect>
-        <x>140</x>
-        <y>320</y>
+        <x>160</x>
+        <y>10</y>
         <width>113</width>
         <height>25</height>
        </rect>
       </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="arp_name_2">
+      <property name="geometry">
+       <rect>
+        <x>720</x>
+        <y>10</y>
+        <width>113</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+     <widget class="QTableWidget" name="arp_table_view_2">
+      <property name="geometry">
+       <rect>
+        <x>630</x>
+        <y>40</y>
+        <width>331</width>
+        <height>291</height>
+       </rect>
+      </property>
+      <column>
+       <property name="text">
+        <string>IP</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>MAC</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>TTL</string>
+       </property>
+      </column>
+     </widget>
+     <widget class="QLabel" name="label">
+      <property name="geometry">
+       <rect>
+        <x>640</x>
+        <y>10</y>
+        <width>67</width>
+        <height>17</height>
+       </rect>
+      </property>
       <property name="text">
-       <string>0.0.0.0/0</string>
+       <string>ARP for:</string>
       </property>
      </widget>
     </widget>
@@ -134,93 +172,11 @@
      <attribute name="title">
       <string>Tab 2</string>
      </attribute>
-     <widget class="QTableWidget" name="arp_table_view_2">
+     <widget class="QTableWidget" name="dhcp_view">
       <property name="geometry">
        <rect>
         <x>40</x>
-        <y>20</y>
-        <width>331</width>
-        <height>291</height>
-       </rect>
-      </property>
-      <column>
-       <property name="text">
-        <string>IP</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>MAC</string>
-       </property>
-      </column>
-      <column>
-       <property name="text">
-        <string>TTL</string>
-       </property>
-      </column>
-     </widget>
-     <widget class="QPushButton" name="ip_change_button_2">
-      <property name="geometry">
-       <rect>
-        <x>250</x>
-        <y>320</y>
-        <width>89</width>
-        <height>25</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Change</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_2">
-      <property name="geometry">
-       <rect>
-        <x>50</x>
-        <y>320</y>
-        <width>81</width>
-        <height>17</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Current IP:</string>
-      </property>
-     </widget>
-     <widget class="QLineEdit" name="ip_inputer_2">
-      <property name="geometry">
-       <rect>
-        <x>130</x>
-        <y>320</y>
-        <width>113</width>
-        <height>25</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>0.0.0.0/0</string>
-      </property>
-     </widget>
-    </widget>
-   </widget>
-   <widget class="QTabWidget" name="tabWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>620</x>
-      <y>10</y>
-      <width>511</width>
-      <height>391</height>
-     </rect>
-    </property>
-    <property name="currentIndex">
-     <number>1</number>
-    </property>
-    <widget class="QWidget" name="tab_5">
-     <attribute name="title">
-      <string>Tab 1</string>
-     </attribute>
-     <widget class="QTableWidget" name="arp_table_view_3">
-      <property name="geometry">
-       <rect>
-        <x>50</x>
-        <y>10</y>
+        <y>60</y>
         <width>331</width>
         <height>291</height>
        </rect>
@@ -241,16 +197,11 @@
        </property>
       </column>
      </widget>
-    </widget>
-    <widget class="QWidget" name="tab_6">
-     <attribute name="title">
-      <string>Tab 2</string>
-     </attribute>
-     <widget class="QTableWidget" name="arp_table_view_4">
+     <widget class="QTableWidget" name="dhcp_view_2">
       <property name="geometry">
        <rect>
-        <x>40</x>
-        <y>20</y>
+        <x>660</x>
+        <y>50</y>
         <width>331</width>
         <height>291</height>
        </rect>
@@ -273,7 +224,7 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QTableWidget" name="tableWidget">
+   <widget class="QTableWidget" name="rip_status">
     <property name="geometry">
      <rect>
       <x>700</x>
@@ -303,6 +254,17 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

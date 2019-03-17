@@ -13,6 +13,7 @@
 #include "arp.hpp"
 #include "console.hpp"
 #include "outinterface.hpp"
+#include "interfaceip.hpp"
 
 namespace Ui {
 class MainWindow;
@@ -31,11 +32,9 @@ signals:
 
 public slots:
     void ArpCink(const Traffic&);
-    void redrawArpTable();
+    void redrawArpTable(std::string);
 
 private slots:
-    void on_ip_change_button_clicked();
-
 
 
 private:
@@ -45,6 +44,8 @@ private:
     Arp arp_;
     std::vector<std::pair<QTableWidgetItem, QTableWidgetItem> > arp_view_;
     Console con_;
+    InterfaceIP ip_intf_;
+    std::unordered_map<std::string, ArpViewMapItem> intf_arp_view_mapping_;
 };
 
 #endif // MAINWINDOW_HPP
