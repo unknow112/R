@@ -27,11 +27,11 @@ void InInterface::run()
 {
     std::cerr << "started capture on "<<interface_name_ << "\n";
     for (auto &packet : device_) {
-        if (nullptr != (*packet.pdu()).find_pdu<Tins::ARP>())
-        {
+        if (nullptr != (*packet.pdu()).find_pdu<Tins::ARP>()){
             emit ArpRecieved(Traffic(interface_name_, *packet.pdu()));
             continue;
         }
+
     }
 }
 

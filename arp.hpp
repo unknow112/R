@@ -26,13 +26,20 @@ struct ArpViewMapItem
         table_(tab)
     {}
     QLineEdit& lab(){
+        if (label_ == nullptr){
+            throw std::runtime_error("uninitialized view, panic");
+        }
         return *label_;
     }
     QTableWidget& tab(){
+        if (table_ == nullptr){
+            throw std::runtime_error("uninitialized view, panic");
+        }
         return *table_;
     }
-    QLineEdit *label_;
-    QTableWidget *table_;
+    ArpViewMapItem() = default;
+    QLineEdit *label_ = nullptr;
+    QTableWidget *table_ = nullptr;
 };
 
 struct ArpTable

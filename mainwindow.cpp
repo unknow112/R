@@ -5,6 +5,7 @@
 #include <iostream>
 #include "traffic.hpp"
 #include <vector>
+#include <sstream>
 #include <array>
 #include <tins/pdu.h>
 #include <string>
@@ -60,25 +61,27 @@ MainWindow::MainWindow(QWidget *parent) :
                 &arp_, SLOT(SetIP(std::string , IPInfo))
     );
 
-//    QObject::connect(
-//                &con_, SIGNAL(ChangeIP(const std::string&, const std::string&, const std::string&)),
-//                &arp_, SLOT(setIP(const Tins::IPv4Address& , const std::string& , uint8_t ))
-//    );
-
-//    QObject::connect(
-//                &con_, SIGNAL(ChangeIP(const std::string&, const std::string&, const std::string&)),
-//                &arp_, SLOT(setIP(const Tins::IPv4Address& , const std::string& , uint8_t ))
-//    );
-
+    QObject::connect(
+                &ip_intf_, SIGNAL(ChangeIP(std::string , IPInfo)),
+                &routing_e_, SLOT(SetIP(std::string, IPInfo))
+    );
 
     QObject::connect(
                 &arp_,SIGNAL(ArpTableChanged(std::string)),
                 this, SLOT(redrawArpTable(std::string))
     );
+
+    QObject::connect(
+                &routing_e_, SIGNAL(RouteTableChanged()),
+                this, SLOT(redrawRouteTable())
+    );
+
+
     QObject::connect(
                 &arp_, SIGNAL(SendArpFrame(Traffic)),
                 &output_intf_, SLOT(sendTraffic(Traffic))
     );
+
     QObject::connect(
                 &con_, SIGNAL(QueryArp(const std::string&, const std::string&)),
                 &arp_, SLOT(LookupIP(const std::string&, const std::string&))
@@ -97,16 +100,6 @@ void MainWindow::ArpCink(const Traffic& t)
     std::cerr << t.in_intf_ << " recieved ARP\n";
 }
 
-//void MainWindow::on_ip_change_button_clicked()
-//{
-//    auto new_ip = ui -> ip_inputer -> text().toStdString();
-//    auto slash_pos = new_ip.find_first_of('/');
-//    if (std::string::npos == slash_pos){
-//        return;
-//    }
-//    emit IPChanged(new_ip.substr(0, slash_pos), "enp0s25", uint8_t(std::stoul(new_ip.substr(slash_pos+1))));
-//}
-
 void MainWindow::redrawArpTable(std::string intf)
 {
     auto &table = intf_arp_view_mapping_[intf].tab();
@@ -124,4 +117,49 @@ void MainWindow::redrawArpTable(std::string intf)
         table.setItem(index, 1, new QTableWidgetItem(entry.second.to_string().data()));
         index++;
     }
+}
+
+auto SwitchRouteOrigin(RouteSource s)
+{
+    switch(s){
+    case CONN:
+        return "C";
+    case STATIC:
+        return "S";
+    case RIP:
+        return "R";
+    }
+    throw std::runtime_error("unhandled enum at SwitchRouteOrigin");
+}
+
+void MainWindow::redrawRouteTable()
+{
+    auto &table = *(ui -> routing_table);
+
+    table.clearSelection();
+    table.disconnect();
+    table.clearContents();
+    table.setRowCount(0);
+
+    int index = 0 ;
+    for (const auto & entry : routing_e_.GetTable()){
+        table.insertRow(index);
+        table.setItem(index, 0, new QTableWidgetItem(SwitchRouteOrigin(entry.second.origin_)));
+        {
+            std::stringstream tmp;
+            tmp << int(entry.second.weight_);
+            table.setItem(index, 1, new QTableWidgetItem(tmp.str().data()));
+        }
+        {
+            std::stringstream tmp;
+            tmp << entry.first.ip_.to_string() << '/' << int(entry.first.pref_l_);
+            table.setItem(index, 2, new QTableWidgetItem(tmp.str().data()));
+        }
+        table.setItem(index, 3, new QTableWidgetItem(entry.second.exit_intf_.data()));
+        table.setItem(index, 4, new QTableWidgetItem(entry.second.next_hop_.to_string().data()));
+        index++;
+    }
+
+
+
 }

@@ -14,6 +14,7 @@
 #include "console.hpp"
 #include "outinterface.hpp"
 #include "interfaceip.hpp"
+#include "re.hpp"
 
 namespace Ui {
 class MainWindow;
@@ -33,6 +34,7 @@ signals:
 public slots:
     void ArpCink(const Traffic&);
     void redrawArpTable(std::string);
+    void redrawRouteTable();
 
 private slots:
 
@@ -46,6 +48,7 @@ private:
     Console con_;
     InterfaceIP ip_intf_;
     std::unordered_map<std::string, ArpViewMapItem> intf_arp_view_mapping_;
+    RE routing_e_;
 };
 
 #endif // MAINWINDOW_HPP

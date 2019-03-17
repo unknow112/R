@@ -66,9 +66,21 @@ void Console::run()
             }
             if (cmd.back() == "addr"){
                 cmd.pop_back();
-                // doparsuj interface , ip a masku
-
-                emit ChangeIP("enp3s0","192.168.1.1","24");
+                if (cmd.size() < 2){
+                    std::cout << command << "\nincomplete command";
+                    continue;
+                }
+                if (cmd.size() == 2 || cmd.front().find('/') != std::string::npos){
+                    auto ip = cmd.front().substr(0, cmd.front().find('/'));
+                    auto pref = cmd.front().substr(cmd.front().find('/')+1);
+                    emit ChangeIP(cmd.back(), ip, pref);
+                    continue;
+                }
+                if (cmd.size() == 3){
+                    emit ChangeIP(cmd[2], cmd[1], cmd[0].substr(cmd[0].find('/')+1));
+                    continue;
+                }
+                std::cout << command << "\n invalid syntax after 6th token\n";
                 continue;
             }
         }
