@@ -80,13 +80,14 @@ public:
 signals:
     void ArpTableChanged(std::string);
     void SendArpFrame(Traffic);
+    void SendTraffic(Traffic);
 
 public slots:
     void processArp(const Traffic&);
     void setIP(const Tins::IPv4Address&, const std::string&, uint8_t);
     void SetIP(std::string , IPInfo);
     void LookupIP(const std::string&, const std::string&  );
-
+    void LookupIP(Traffic t);
 
 private:
     QTimer timer_;

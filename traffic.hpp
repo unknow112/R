@@ -3,6 +3,7 @@
 #include <string>
 #include <tins/pdu.h>
 #include <memory>
+#include <tins/ip_address.h>
 
 class Traffic
 {
@@ -18,7 +19,7 @@ public:
     std::shared_ptr<Tins::PDU> frame_;
     std::string in_intf_;
     std::string out_intf_;
-
+    Tins::IPv4Address next_hop_;
 
 };
 

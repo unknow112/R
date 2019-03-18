@@ -31,7 +31,9 @@ void InInterface::run()
             emit ArpRecieved(Traffic(interface_name_, *packet.pdu()));
             continue;
         }
-
+        if (nullptr != (*packet.pdu()).find_pdu<Tins::IP>()){
+            emit TrafficRecieved(Traffic(interface_name_, *packet.pdu()));
+        }
     }
 }
 

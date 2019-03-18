@@ -31,6 +31,10 @@ MainWindow::MainWindow(QWidget *parent) :
                 &intf, SIGNAL(ArpRecieved(const Traffic&)),
                 &arp_, SLOT(processArp(const Traffic&))
         );
+        QObject::connect(
+                &intf, SIGNAL(TrafficRecieved(const Traffic&)),
+                &routing_e_,SLOT(RouteTraffic(const Traffic&))
+        );
         intf.start();
     }
 
@@ -76,6 +80,15 @@ MainWindow::MainWindow(QWidget *parent) :
                 this, SLOT(redrawRouteTable())
     );
 
+    QObject::connect(
+                &routing_e_, SIGNAL(SendTraffic(Traffic)),
+                &arp_, SLOT(LookupIP(Traffic))
+    );
+
+    QObject::connect(
+                &arp_, SIGNAL(SendTraffic(Traffic)),
+                &output_intf_, SLOT(sendTraffic(Traffic))
+    );
 
     QObject::connect(
                 &arp_, SIGNAL(SendArpFrame(Traffic)),
@@ -128,6 +141,8 @@ auto SwitchRouteOrigin(RouteSource s)
         return "S";
     case RIP:
         return "R";
+    case IMPLICIT:
+        return "I";
     }
     throw std::runtime_error("unhandled enum at SwitchRouteOrigin");
 }

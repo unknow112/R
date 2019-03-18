@@ -17,7 +17,6 @@ signals:
 public slots:
     void sendTraffic(Traffic);
 
-
 private:
     std::unordered_map<std::string, Tins::PacketSender> devices_;
     Tins::PacketSender d_;

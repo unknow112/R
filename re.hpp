@@ -5,12 +5,14 @@
 #include <QObject>
 #include "interfaceip.hpp"
 #include "interfaceip.hpp"
+#include <optional>
 #include "tins/ip_address.h"
 
 enum RouteSource{
     CONN,
     STATIC,
-    RIP
+    RIP,
+    IMPLICIT
 };
 
 struct ExitInfo
@@ -46,13 +48,17 @@ public:
 signals:
     void RedrawTable();
     void RouteTableChanged();
+    void SendTraffic(Traffic);
 
 public slots:
     void SetIP(std::string, IPInfo);
-    //void RouteTraffic(Traffic);
+    void RouteTraffic(const Traffic&);
 
 
 private:
+    ExitInfo route(const Tins::IPv4Address& dst);
+    bool match_prefix(const Tins::IPv4Address& dst, const PrefixInfo& prefix);
+    const ForwardEntry implicit_{PrefixInfo("0.0.0.0", "0"), ExitInfo("null", IMPLICIT)};
     std::vector<ForwardEntry > forward_table_;
 };
 

@@ -55,9 +55,23 @@ void Arp::LookupIP(const std::string& s_dst_ip, const std::string& out_intf )
         // create request and send it
         auto t = CreateRequest(dst_ip, out_intf);
         emit SendArpFrame(t);
-    } else {
-        // idk daco, si asi vlastne callbacky naimplementujem
     }
+}
+
+void Arp::LookupIP(Traffic t)
+{
+    ArpTable& m_t = arp_tables_[t.out_intf_];
+    auto res = m_t.mappings_.find(t.next_hop_);
+    if (m_t.mappings_.end() == res){
+        auto t_a = CreateRequest(t.next_hop_, t.out_intf_);
+        emit SendArpFrame(t_a);
+    } else {
+        auto & eth = t.frame_->rfind_pdu<Tins::EthernetII>();
+        eth.dst_addr((*res).second);
+        eth.src_addr(m_t.my_mac_);
+        emit SendTraffic(t);
+    }
+
 }
 
 void Arp::processArp(const Traffic& t )
