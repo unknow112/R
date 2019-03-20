@@ -18,7 +18,6 @@ using MACAddress= Tins::HWAddress<6>;
 const uint16_t ARP_OP_REQUEST = 1;
 const uint16_t ARP_OP_REPLY = 2;
 
-
 struct ArpViewMapItem
 {
     ArpViewMapItem(QLineEdit* lab, QTableWidget* tab):
@@ -53,6 +52,8 @@ struct ArpTable
 
     std::string intf_;
     Tins::IPv4Address my_ip_;
+    Tins::IPv4Address my_net_;
+    Tins::IPv4Address my_bcast_;
     uint8_t my_prefix_size_;
     MACAddress my_mac_;
     std::unordered_map<Tins::IPv4Address, MACAddress> mappings_;

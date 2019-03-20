@@ -25,6 +25,7 @@ struct IPInfo{
 };
 
 
+
 class InterfaceIP : public QObject
 {
     Q_OBJECT

@@ -49,11 +49,11 @@ void Console::run()
             }
             if (cmd.back() == "query"){
                 cmd.pop_back();
-                if (cmd.size() == 0){
+                if (cmd.size() != 2){
                     std::cout << command << "\nincomplete command";
                     continue;
                 }
-                emit QueryArp(cmd.back(), "enp0s25" );
+                emit QueryArp(cmd[0], cmd[1]);
                 continue;
 
             }
@@ -70,13 +70,13 @@ void Console::run()
                     std::cout << command << "\nincomplete command";
                     continue;
                 }
-                if (cmd.size() == 2 || cmd.front().find('/') != std::string::npos){
+                if (cmd.size() == 2 && cmd.front().find('/') != std::string::npos){
                     auto ip = cmd.front().substr(0, cmd.front().find('/'));
                     auto pref = cmd.front().substr(cmd.front().find('/')+1);
                     emit ChangeIP(cmd.back(), ip, pref);
                     continue;
                 }
-                if (cmd.size() == 3){
+                if (cmd.size() == 3 && cmd.front().find('/') != std::string::npos){
                     emit ChangeIP(cmd[2], cmd[1], cmd[0].substr(cmd[0].find('/')+1));
                     continue;
                 }

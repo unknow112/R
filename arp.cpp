@@ -1,11 +1,13 @@
 #include "arp.hpp"
 #include "traffic.hpp"
+#include "interfaceip.hpp"
 #include <tins/network_interface.h>
 #include <vector>
 #include <unordered_map>
 #include <tins/arp.h>
 #include <tins/hw_address.h>
 #include <tins/ip.h>
+#include <tins/ip_address.h>
 #include <tins/ethernetII.h>
 #include <tins/pdu.h>
 #include <iostream>
@@ -45,11 +47,29 @@ Traffic Arp::CreateRequest(const Tins::IPv4Address& dst_ip,  const std::string& 
     return out;
 }
 
+
+Tins::IPv4Address get_network(const Tins::IPv4Address& ip, uint8_t pref_l)
+{
+    return Tins::IPv4Address(uint32_t(ip) & Tins::IPv4Address::from_prefix_length(pref_l));
+
+}
+
+Tins::IPv4Address get_broadcast(const Tins::IPv4Address& ip, uint8_t pref_l)
+{
+
+    return Tins::IPv4Address(uint32_t(get_network(ip, pref_l)) + ~uint32_t(Tins::IPv4Address::from_prefix_length(pref_l)));
+}
+
+
 void Arp::LookupIP(const std::string& s_dst_ip, const std::string& out_intf )
 {
     Tins::IPv4Address dst_ip(s_dst_ip);
     std::cerr<< "got to lookup " << dst_ip.to_string() << '\n';
     ArpTable& m_t = arp_tables_[out_intf];
+    if (m_t.my_net_ == s_dst_ip || m_t.my_bcast_ == s_dst_ip){
+        std::cerr<< "nah\n";
+        return;
+    }
     auto res = m_t.mappings_.find(dst_ip);
     if (m_t.mappings_.end() == res){
         // create request and send it
@@ -61,6 +81,9 @@ void Arp::LookupIP(const std::string& s_dst_ip, const std::string& out_intf )
 void Arp::LookupIP(Traffic t)
 {
     ArpTable& m_t = arp_tables_[t.out_intf_];
+    if (t.next_hop_ == m_t.my_net_ || t.next_hop_ == m_t.my_bcast_){
+        return;
+    }
     auto res = m_t.mappings_.find(t.next_hop_);
     if (m_t.mappings_.end() == res){
         auto t_a = CreateRequest(t.next_hop_, t.out_intf_);
@@ -107,6 +130,8 @@ void Arp::setIP(const Tins::IPv4Address& ip, const std::string& intf, uint8_t pr
     }
     m_t.my_ip_ = ip;
     m_t.my_prefix_size_ = prefix;
+    m_t.my_net_ = get_network(ip, prefix);
+    m_t.my_bcast_ = get_broadcast(ip, prefix);
     m_t.mappings_.clear();
     m_t.mappings_.insert({ip, m_t.my_mac_ });
     emit ArpTableChanged(intf);
