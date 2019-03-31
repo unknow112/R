@@ -35,7 +35,8 @@ SOURCES += \
     outinterface.cpp \
     get_int.cpp \
     interfaceip.cpp \
-    re.cpp
+    re.cpp \
+    rip.cpp
 
 HEADERS += \
         mainwindow.hpp \
@@ -47,7 +48,8 @@ HEADERS += \
     console.hpp \
     outinterface.hpp \
     interfaceip.hpp \
-    re.hpp
+    re.hpp \
+    rip.hpp
 
 FORMS += \
         mainwindow.ui
