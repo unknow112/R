@@ -28,6 +28,8 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+
+
 signals:
     void IPChanged(const Tins::IPv4Address& , const std::string& , uint8_t );
 

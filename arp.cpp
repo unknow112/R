@@ -18,6 +18,12 @@ Arp::Arp(QObject *parent) : QObject(parent)
     timer_.setSingleShot(true);
 }
 
+void Arp::setRE(RE * r)
+{
+    routing_ = r;
+}
+
+
 Traffic Arp::CreateReply(const Traffic& t_in)
 {
     Traffic out;
@@ -101,17 +107,24 @@ void Arp::processArp(const Traffic& t )
 {
     Tins::ARP a = t.frame_->rfind_pdu<Tins::ARP>();
     auto type = a.opcode();
-    switch(type){
-    case ARP_OP_REQUEST:
+    if (type == ARP_OP_REQUEST){
         if (arp_tables_[t.in_intf_].my_ip_ == a.target_ip_addr()){
             SendArpFrame(CreateReply(t));
             std::cerr << "ARP SHOULD REPLY TO REQUEST\n";
+            return;
         }
-    break;
-    case ARP_OP_REPLY:
+        auto path = (*routing_).route(a.target_ip_addr());
+        if (path.exit_intf_ != "null"){
+            SendArpFrame(CreateReply(t));
+            std::cerr << "PROXYARP SHOULD REPLY TO REQUEST\n";
+            return;
+        }
+   }
+    if (type == ARP_OP_REPLY){
         ArpTable& m_t = arp_tables_[t.in_intf_];
         m_t.mappings_.insert({a.sender_ip_addr(), a.sender_hw_addr()});
         emit ArpTableChanged(t.in_intf_);
+        return;
     }
 }
 

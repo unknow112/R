@@ -6,6 +6,7 @@
 #include "traffic.hpp"
 #include <QObject>
 #include <tins/hw_address.h>
+#include "re.hpp"
 #include <vector>
 #include <tins/ip_address.h>
 #include <QTimer>
@@ -72,6 +73,7 @@ public:
     Traffic CreateReply(const Traffic&);
     Traffic CreateRequest(const Tins::IPv4Address& ,  const std::string&);
 
+    void setRE(RE *);
 
 //    void addArpEntry();
 
@@ -92,7 +94,7 @@ public slots:
 
 private:
     QTimer timer_;
-
+    RE* routing_;
     std::unordered_map<std::string, ArpTable> arp_tables_;
 };
 

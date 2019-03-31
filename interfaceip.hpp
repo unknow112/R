@@ -20,6 +20,12 @@ struct IPInfo{
         pref_l_(pref)
     {}
 
+    bool operator==(const IPInfo& o)
+    {
+        return ip_ == o.ip_ && pref_l_ == o.pref_l_;
+    }
+
+
     Tins::IPv4Address ip_;
     uint8_t pref_l_;
 };

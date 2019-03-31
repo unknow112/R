@@ -13,6 +13,8 @@
 #include "arp.hpp"
 #include "interfaceip.hpp"
 
+
+Q_DECLARE_METATYPE(ForwardEntry)
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -20,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     auto interfaces  = get_interfaces();
     qRegisterMetaType<Traffic>("Traffic");
+    qRegisterMetaType<ForwardEntry>("FE");
 
     arp_.setInterfaces(interfaces);
     for (const auto& intf: interfaces){
@@ -100,8 +103,30 @@ MainWindow::MainWindow(QWidget *parent) :
                 &arp_, SLOT(LookupIP(const std::string&, const std::string&))
     );
 
+    QObject::connect(
+                &con_, SIGNAL(PrintStaticRoutes()),
+                &routing_e_, SLOT(PrintStatic())
+    );
+
+    QObject::connect(
+                &routing_e_, SIGNAL(PrintingDone()),
+                &con_, SLOT(Restart())
+    );
+
+    QObject::connect(
+                &con_, SIGNAL(AddStaticRoute(ForwardEntry)),
+                &routing_e_, SLOT(AddStatic(ForwardEntry))
+    );
+
+    QObject::connect(
+                &con_, SIGNAL(DelStaticRoute(int)),
+                &routing_e_, SLOT(DelStatic(int))
+    );
+
+    arp_.setRE(&routing_e_);
     con_.start();
 }
+
 
 MainWindow::~MainWindow()
 {

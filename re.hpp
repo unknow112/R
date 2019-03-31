@@ -26,6 +26,7 @@ struct ExitInfo
         exit_intf_(intf),
         origin_(origin)
     {}
+    ExitInfo() = default;
 
     std::string exit_intf_;
     Tins::IPv4Address next_hop_;
@@ -44,22 +45,30 @@ class RE : public QObject
 public:
     explicit RE(QObject *parent = nullptr);
     const std::vector<ForwardEntry>& GetTable() const;
+    ExitInfo route(const Tins::IPv4Address& dst);
 
 signals:
     void RedrawTable();
     void RouteTableChanged();
     void SendTraffic(Traffic);
+    void PrintingDone();
 
 public slots:
     void SetIP(std::string, IPInfo);
     void RouteTraffic(const Traffic&);
-
+    void PrintStatic();
+    void AddStatic(ForwardEntry);
+    void DelStatic(int);
 
 private:
-    ExitInfo route(const Tins::IPv4Address& dst);
     bool match_prefix(const Tins::IPv4Address& dst, const PrefixInfo& prefix);
     const ForwardEntry implicit_{PrefixInfo("0.0.0.0", "0"), ExitInfo("null", IMPLICIT)};
     std::vector<ForwardEntry > forward_table_;
+    std::vector<ForwardEntry > static_routes_;
+    void TryAdd(ForwardEntry);
+    bool is_up(const std::string& );
+    void Rebuild();
+
 };
 
 #endif // RE_HPP
