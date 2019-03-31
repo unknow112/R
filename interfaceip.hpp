@@ -6,6 +6,8 @@
 #include <QObject>
 #include <string>
 #include <tins/ip_address.h>
+bool is_network(const Tins::IPv4Address& ip, const Tins::IPv4Address& mask);
+
 struct IPInfo{
     IPInfo(const std::string & ip, const std::string prefix):
         ip_(ip),

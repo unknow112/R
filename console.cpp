@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <vector>
+#include "interfaceip.hpp"
 #include <tins/exceptions.h>
 
 
@@ -68,6 +69,21 @@ void Console::parseAddRoute(const std::vector<std::string>& x)
             if (kp.front().find('/') != std::string::npos){
                 auto ip = kp.front().substr(0, kp.front().find('/'));
                 auto pref = kp.front().substr(kp.front().find('/')+1);
+                try {
+                    auto new_ip_ = Tins::IPv4Address(ip);
+                    long new_pref_l = 0;
+                    new_pref_l = std::stol(pref);
+                    if (! is_network(new_ip_, Tins::IPv4Address::from_prefix_length(uint32_t(new_pref_l)))  ){
+                        throw Tins::invalid_address();
+                    }
+                } catch (Tins::invalid_address) {
+                    std::cerr << "cannot add route, invalid prefix!\n";
+                    return;
+                } catch (std::invalid_argument) {
+                    std::cerr << "cannot add route, invalid prefix!\n";
+                    return;
+                }
+
                 route.first = IPInfo(ip, pref); // err not handled
                 continue;
             }
