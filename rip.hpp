@@ -10,9 +10,9 @@
 #include "ip_helpers.hpp"
 
 
-const uint32_t RIP_INVALID_TIMER = 180;
-const uint32_t RIP_FLUSH_TIMER = 240;
-const uint32_t RIP_HOLDDOWN_TIMER = 180;
+const uint32_t RIP_INVALID_TIMER = 35;
+const uint32_t RIP_FLUSH_TIMER = 60;
+const uint32_t RIP_HOLDDOWN_TIMER = 10;
 
 enum RipUpdateState
 {

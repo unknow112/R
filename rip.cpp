@@ -369,6 +369,10 @@ void Rip::UpdateLife()
             entry.holddown_timer_ = RIP_HOLDDOWN_TIMER;
             SendPoisionUpdate(entry);
         }
+        if (entry.state_ != OK && entry.holddown_timer_ == 0){
+            entry.state_  = OK;
+            entry.metric_ = 16;
+        }
     }
     auto old_size = db_remotes_.size();
     if (!db_locals_.empty()){
@@ -378,7 +382,7 @@ void Rip::UpdateLife()
     db_remotes_.erase(
         std::remove_if(
             db_remotes_.begin(), db_remotes_.end(),
-            [](const RipUpdate& r){ return r.flush_timer_ == 0 && r.state_ == HOLDDOWN ;}
+            [](const RipUpdate& r){ return r.flush_timer_ == 0 && r.state_ != OK;}
         ),
         db_remotes_.end()
     );
