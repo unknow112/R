@@ -118,6 +118,22 @@ void Console::run()
         if (cmd.size() == 0 ){
             continue;
         }
+        if (cmd.back() == "rip"){
+            cmd.pop_back();
+            if (cmd.size() != 2){
+                continue;
+            }
+            if (cmd.back() == "on"){
+                emit DoToggleRip(true , cmd.front() );
+            } else if (cmd.back() == "off"){
+                emit DoToggleRip(false , cmd.front() );
+            }
+            continue;
+        }
+        if (cmd.back() == "evalspot"){
+            emit PutMeToEvalSpot();
+            continue;
+        }
         if (cmd.back() == "arp"){
             cmd.pop_back();
             if (cmd.size() == 0){
@@ -133,6 +149,15 @@ void Console::run()
                 emit QueryArp(cmd[0], cmd[1]);
                 continue;
 
+            }
+            if (cmd.back() == "clear"){
+                cmd.pop_back();
+                if (cmd.size() != 1){
+                    std::cout << command << "\nbad syntax prolly";
+                    continue;
+                }
+                emit DoClearArpTable(cmd.back());
+                continue;
             }
         }
         if (cmd.back() == "ip"){

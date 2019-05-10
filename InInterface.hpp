@@ -22,6 +22,7 @@ public:
 signals:
     void ArpRecieved(const Traffic&);
     void TrafficRecieved(const Traffic&);
+    void RipRecieved(const Traffic&);
 
 
 private:

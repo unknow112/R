@@ -58,6 +58,7 @@ struct ArpTable
     uint8_t my_prefix_size_;
     MACAddress my_mac_;
     std::unordered_map<Tins::IPv4Address, MACAddress> mappings_;
+    std::unordered_map<Tins::IPv4Address, uint32_t> life_;
 };
 
 
@@ -91,10 +92,16 @@ public slots:
     void SetIP(std::string , IPInfo);
     void LookupIP(const std::string&, const std::string&  );
     void LookupIP(Traffic t);
+    void WillClearArpTable(std::string);
+    void WillSendRip(Traffic);
+
+private slots:
+    void DecrementLife();
 
 private:
     QTimer timer_;
     RE* routing_;
+    uint32_t max_age_ = 480;
     std::unordered_map<std::string, ArpTable> arp_tables_;
 };
 

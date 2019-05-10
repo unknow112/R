@@ -74,3 +74,8 @@ void InterfaceIP::SetIP(const std::string& intf, const std::string& ip, const st
     // check overlaps in the future
     emit ChangeIP(intf, new_info);
 }
+
+std::unordered_map<std::string, IPInfo> InterfaceIP::data() const
+{
+    return i;
+}

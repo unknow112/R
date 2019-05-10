@@ -14,6 +14,11 @@ public:
       in_intf_(in_intf)
     {}
 
+    Traffic(const Tins::PDU& frame, const std::string& out_intf):
+        frame_(frame.clone()),
+        out_intf_(out_intf)
+    {}
+
 
 
     std::shared_ptr<Tins::PDU> frame_;

@@ -18,6 +18,10 @@ signals:
     void PrintStaticRoutes();
     void AddStaticRoute(ForwardEntry);
     void DelStaticRoute(int);
+    void DoClearArpTable(std::string);
+    void PutMeToEvalSpot();
+    void DoToggleRip(bool, std::string);
+
 
 public slots:
     void Restart();

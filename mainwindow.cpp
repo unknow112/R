@@ -38,6 +38,11 @@ MainWindow::MainWindow(QWidget *parent) :
                 &intf, SIGNAL(TrafficRecieved(const Traffic&)),
                 &routing_e_,SLOT(RouteTraffic(const Traffic&))
         );
+        QObject::connect(
+                &intf, SIGNAL(RipRecieved(const Traffic&)),
+                &rip_e_, SLOT(ProcessUpdate(const Traffic&))
+        );
+
         intf.start();
     }
 
@@ -69,8 +74,18 @@ MainWindow::MainWindow(QWidget *parent) :
     );
 
     QObject::connect(
+                &con_, SIGNAL(DoClearArpTable(std::string)),
+                &arp_, SLOT(WillClearArpTable(std::string))
+    );
+
+    QObject::connect(
                 &ip_intf_, SIGNAL(ChangeIP(std::string , IPInfo)),
                 &routing_e_, SLOT(SetIP(std::string, IPInfo))
+    );
+
+    QObject::connect(
+                &ip_intf_, SIGNAL(ChangeIP(std::string , IPInfo)),
+                &rip_e_, SLOT(SetIP(std::string, IPInfo))
     );
 
     QObject::connect(
@@ -94,6 +109,11 @@ MainWindow::MainWindow(QWidget *parent) :
     );
 
     QObject::connect(
+                &con_, SIGNAL(DoToggleRip(bool,std::string)),
+                &rip_e_, SLOT(WillToggleRip(bool, std::string))
+    );
+
+    QObject::connect(
                 &arp_, SIGNAL(SendArpFrame(Traffic)),
                 &output_intf_, SLOT(sendTraffic(Traffic))
     );
@@ -106,6 +126,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(
                 &con_, SIGNAL(PrintStaticRoutes()),
                 &routing_e_, SLOT(PrintStatic())
+    );
+
+    QObject::connect(
+                &rip_e_, SIGNAL(DoSendRip(Traffic)),
+                &arp_, SLOT(WillSendRip(Traffic))
     );
 
     QObject::connect(
@@ -123,8 +148,34 @@ MainWindow::MainWindow(QWidget *parent) :
                 &routing_e_, SLOT(DelStatic(int))
     );
 
+    QObject::connect(
+                &con_, SIGNAL(PutMeToEvalSpot()),
+                this, SLOT(EvalSpot())
+    );
+
+    QObject::connect(
+                &rip_e_, SIGNAL(RipDatabaseChanged()),
+                &routing_e_, SLOT(Rebuild())
+    );
+
+
+    QObject::connect(
+                &rip_e_, SIGNAL(RipDatabaseChanged()),
+                this, SLOT(redrawRipTable())
+    );
+
+    QObject::connect(
+                &rip_e_, SIGNAL(RipDatabaseTimersChanged()),
+                this, SLOT(redrawRipTable())
+    );
+
+
+    rip_e_.SetIpObjs(&ip_intf_);
+    routing_e_.setRipEngine(&rip_e_);
     arp_.setRE(&routing_e_);
     con_.start();
+
+    ui->rip_timer -> setText("-");
 }
 
 
@@ -149,10 +200,19 @@ void MainWindow::redrawArpTable(std::string intf)
 
 
     int index = 0 ;
+    const auto& lifetimes = arp_.GetTable(intf).life_;
     for (const auto & entry : arp_.GetTable(intf).mappings_){
         table.insertRow(index);
         table.setItem(index, 0, new QTableWidgetItem(entry.first.to_string().data()));
         table.setItem(index, 1, new QTableWidgetItem(entry.second.to_string().data()));
+        auto ttl = lifetimes.find(entry.first);
+        if (ttl == lifetimes.end()){
+            table.setItem(index, 2, new QTableWidgetItem("-"));
+        } else {
+            std::stringstream tmp;
+            tmp << (*ttl).second;
+            table.setItem(index, 2, new QTableWidgetItem(tmp.str().data()));
+        }
         index++;
     }
 }
@@ -170,6 +230,58 @@ auto SwitchRouteOrigin(RouteSource s)
         return "I";
     }
     throw std::runtime_error("unhandled enum at SwitchRouteOrigin");
+}
+
+void MainWindow::redrawRipTable()
+{
+    auto &table = *(ui -> rip_table);
+
+    table.clearSelection();
+    table.disconnect();
+    table.clearContents();
+    table.setRowCount(0);
+
+    int index= 0 ;
+    std::stringstream tmp;
+    for (const auto & entry : rip_e_.getDataBase()){
+        table.insertRow(index);
+
+        tmp << entry.dst_prefix_.first.to_string() << '/' << entry.dst_prefix_.second;
+        table.setItem(index, 0, new QTableWidgetItem(tmp.str().data()));
+        tmp.str("");
+
+        table.setItem(index,1, new QTableWidgetItem(entry.origin_ip_.to_string().data()));
+
+        tmp << entry.holddown_timer_ ;
+        table.setItem(index,2, new QTableWidgetItem(tmp.str().data()));
+        tmp.str("");
+
+        tmp << entry.invalid_timer_ ;
+        table.setItem(index,3, new QTableWidgetItem(tmp.str().data()));
+        tmp.str("");
+
+        tmp << entry.flush_timer_ ;
+        table.setItem(index,4, new QTableWidgetItem(tmp.str().data()));
+        tmp.str("");
+
+        QTableWidgetItem * statestr = nullptr;
+        switch (entry.state_) {
+        case RipUpdateState::OK:
+            statestr = new QTableWidgetItem("OK");
+            break;
+        case RipUpdateState::POSSIBLY_DOWN:
+        case RipUpdateState::HOLDDOWN:
+            statestr = new QTableWidgetItem("Possibly Down");
+            break;
+        }
+        table.setItem(index,5, statestr);
+    }
+    if (rip_e_.isOnSomewhere()){
+        tmp << rip_e_.getTimeUpdate();
+        ui->rip_timer -> setText(tmp.str().data());
+    } else {
+        ui->rip_timer -> setText("-");
+    }
 }
 
 void MainWindow::redrawRouteTable()
@@ -200,6 +312,10 @@ void MainWindow::redrawRouteTable()
         index++;
     }
 
+}
 
-
+void MainWindow::EvalSpot()
+{
+    // enjoy your access to *this with all references
+    return;
 }

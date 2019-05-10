@@ -1,6 +1,7 @@
 #include "re.hpp"
 #include <tins/ip.h>
 #include <iostream>
+#include "ip_helpers.hpp"
 #include <exception>
 RE::RE(QObject *parent) : QObject(parent)
 {
@@ -40,26 +41,33 @@ const std::vector<ForwardEntry>& RE::GetTable() const
     return forward_table_;
 }
 
-bool RE::match_prefix(const Tins::IPv4Address& dst, const PrefixInfo& prefix)
-{
-    auto mask = uint32_t(Tins::IPv4Address::from_prefix_length(prefix.pref_l_));
-    auto net = Tins::IPv4Address(uint32_t(dst) & mask);
-    return net == prefix.ip_;
-}
+
 
 ExitInfo RE::route(const Tins::IPv4Address& dst)
 {
-    auto best_match = forward_table_.begin();
+    auto best_match = forward_table_.end();
+    auto current = forward_table_.begin();
+    while (current != forward_table_.end()){
+        if (match_prefix(dst, (*current).first)){
+            best_match = current;
+            break;
+        }
+        current++;
+    }
 
-    for(auto current = forward_table_.begin() + 1 ; current != forward_table_.end() ; current++ ){
+    for(; current != forward_table_.end() ; current++ ){
         if (match_prefix(dst, (*current).first)){
             if ((*current).first.pref_l_ > (*best_match).first.pref_l_){
                 best_match = current;
             }
         }
     }
-    return (*best_match).second;
 
+    if (best_match == forward_table_.end()){
+        return implicit_.second;
+    } else {
+        return (*best_match).second;
+    }
 }
 
 void RE::PrintStatic()
@@ -99,7 +107,7 @@ bool is_better_source(RouteSource a, RouteSource b)
 bool RE::is_up(const std::string& intf)
 {
     for (const auto& x:forward_table_ ){
-        if (x.second.exit_intf_ == intf){
+        if (x.second.exit_intf_ == intf && x.second.origin_ == CONN){
             return true;
         }
     }
@@ -139,9 +147,7 @@ void RE::TryAdd(ForwardEntry e)
         if (is_up(e.second.exit_intf_)){
             forward_table_.push_back(e);
         }
-    }
-
-    if (orig.has_value()){
+    } else if(orig.has_value()){
         TryAdd(orig.value());
     }
 
@@ -170,8 +176,18 @@ void RE::Rebuild()
             (*this).TryAdd(x);
         }
     );
-    // este sa sam picne aj ripko later on
 
+    auto & ripdb = rip_e_->getDataBase();
+    std::for_each(
+        ripdb.begin(),
+        ripdb.end(),
+        [this](const RipUpdate& a){
+            if (a.metric_ < 16) {
+                (*this).TryAdd(a.to_fwentry());
+            }
+        }
+    );
+    emit RouteTableChanged();
 }
 
 void RE::DelStatic(int index)
@@ -183,6 +199,7 @@ void RE::DelStatic(int index)
         elem += index;
         static_routes_.erase(elem);
         Rebuild();
+        emit RouteTableChanged();
     }
     // proste zavolaj rebuild tabulky a napchaj ich tam od znova bez toho vymazaneho idk idc.
 
@@ -209,10 +226,9 @@ void RE::RouteTraffic(const Traffic& in)
     if (direction.exit_intf_ == "null"){
         return;
     }
-    // v buducnosti sem pride ci je local
 
     out.out_intf_ = direction.exit_intf_;
-    if (direction.origin_ == CONN || direction.next_hop_ == "0.0.0.0"){
+    if (direction.next_hop_ == "0.0.0.0"){
         out.next_hop_ = packet.dst_addr();
     } else {
         out.next_hop_ = direction.next_hop_;

@@ -32,8 +32,13 @@ void InInterface::run()
             continue;
         }
         if (nullptr != (*packet.pdu()).find_pdu<Tins::IP>()){
-            emit TrafficRecieved(Traffic(interface_name_, *packet.pdu()));
+            if ((*packet.pdu()).rfind_pdu<Tins::IP>().dst_addr() == "224.0.0.9") {
+                emit RipRecieved(Traffic(interface_name_, *packet.pdu()));
+            } else {
+                emit TrafficRecieved(Traffic(interface_name_, *packet.pdu()));
+            }
         }
+
     }
 }
 
@@ -41,8 +46,8 @@ void InInterface::run()
 Tins::SnifferConfiguration InInterface::makeConf(const Tins::NetworkInterface& intf){
     Tins::SnifferConfiguration config;
     config.set_immediate_mode(true);
-    config.set_promisc_mode(false);
-    config.set_filter("not ether src host "+intf.hw_address().to_string());
+    config.set_promisc_mode(true);
+    config.set_filter("(not ether src host "+intf.hw_address().to_string() + ") or (ether dst host 01:00:5e:00:00:09)");
     return config;
 }
 

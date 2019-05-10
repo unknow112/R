@@ -1,42 +1,14 @@
 #ifndef RE_HPP
 #define RE_HPP
-
+#include "ip_helpers.hpp"
 #include "traffic.hpp"
 #include <QObject>
 #include "interfaceip.hpp"
 #include "interfaceip.hpp"
 #include <optional>
 #include "tins/ip_address.h"
+#include "rip.hpp"
 
-enum RouteSource{
-    CONN,
-    STATIC,
-    RIP,
-    IMPLICIT
-};
-
-struct ExitInfo
-{
-    ExitInfo(std::string intf, Tins::IPv4Address next_hop, RouteSource origin):
-        exit_intf_(intf),
-        next_hop_(next_hop),
-        origin_(origin)
-    {}
-    ExitInfo(std::string intf, RouteSource origin):
-        exit_intf_(intf),
-        origin_(origin)
-    {}
-    ExitInfo() = default;
-
-    std::string exit_intf_;
-    Tins::IPv4Address next_hop_;
-    RouteSource origin_;
-    int weight_ = 0;
-};
-
-using PrefixInfo = IPInfo;
-
-using ForwardEntry = std::pair<PrefixInfo, ExitInfo >;
 
 
 class RE : public QObject
@@ -46,6 +18,10 @@ public:
     explicit RE(QObject *parent = nullptr);
     const std::vector<ForwardEntry>& GetTable() const;
     ExitInfo route(const Tins::IPv4Address& dst);
+    void setRipEngine(Rip * ptr)
+    {
+        rip_e_ = ptr;
+    }
 
 signals:
     void RedrawTable();
@@ -59,15 +35,18 @@ public slots:
     void PrintStatic();
     void AddStatic(ForwardEntry);
     void DelStatic(int);
+    void Rebuild();
+
 
 private:
-    bool match_prefix(const Tins::IPv4Address& dst, const PrefixInfo& prefix);
+    //bool match_prefix(const Tins::IPv4Address& dst, const PrefixInfo& prefix);
     const ForwardEntry implicit_{PrefixInfo("0.0.0.0", "0"), ExitInfo("null", IMPLICIT)};
     std::vector<ForwardEntry > forward_table_;
     std::vector<ForwardEntry > static_routes_;
     void TryAdd(ForwardEntry);
     bool is_up(const std::string& );
-    void Rebuild();
+
+    Rip *rip_e_ = nullptr;
 
 };
 
